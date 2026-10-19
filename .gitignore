@@ -1,0 +1,43 @@
+# Secrets and local environment files
+**/.env
+**/.env.*
+!**/.env.example
+**/secrets/
+**/*service-account*.json
+**/*credentials*.json
+
+# Python AI service
+**/venv/
+**/.venv/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+
+# Flutter / Dart generated files and build output
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub-cache/
+**/.pub/
+**/build/
+**/coverage/
+**/android/.gradle/
+**/android/local.properties
+**/android/key.properties
+**/*.jks
+**/*.keystore
+
+# IDE, OS and temporary files
+**/.idea/
+**/.vscode/
+**/.DS_Store
+**/Thumbs.db
+**/*.log
+**/*.swp
+
+# Local archive copies (the source folders are versioned instead)
+/sona_ai.zip
+/sona_app.zip

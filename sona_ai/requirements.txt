@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+supabase
+transformers<5
+librosa
+soundfile
+numpy
+requests
+scikit-learn
