@@ -34,6 +34,29 @@ class _HomeScreenState extends State<HomeScreen> {
   final DailyMixesTable dailyMixesTable = DailyMixesTable();
   final AiService aiService = AiService();
 
+  void _showAppNotification(String message, IconData icon) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: const Color(0xFFfde8ed), size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(color: Color(0xFFfde8ed), fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF3a1020),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
   Future<void> _loadData() async {
     final featured = await tracksTable.getFeaturedTrack();
     final tracks = await recommendationsTable.getForYou();
@@ -53,27 +76,44 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _buildDailyMixes() async {
     final userId = _supabase.auth.currentUser?.id;
-    if (userId == null || _isBuildingMixes) return;
+    if (_isBuildingMixes) return;
+    if (userId == null) {
+      _showAppNotification(
+        'Sign in to create your daily mixes.',
+        Icons.info_outline,
+      );
+      return;
+    }
     setState(() => _isBuildingMixes = true);
     final result = await aiService.buildDailyMixes(userId);
+    List<Map<String, dynamic>>? updatedMixes;
     if (result?['status'] == 'ok') {
-      _dailyMixes = await dailyMixesTable.getForCurrentUser();
+      updatedMixes = await dailyMixesTable.getForCurrentUser();
     }
     if (!mounted) return;
-    setState(() => _isBuildingMixes = false);
+    setState(() {
+      _isBuildingMixes = false;
+      if (updatedMixes != null) _dailyMixes = updatedMixes;
+    });
     if (result == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Could not reach Sona AI. Check that the local server is running.',
-          ),
-        ),
+      _showAppNotification(
+        'Could not reach Sona AI. Check that the local server is running.',
+        Icons.error_outline,
       );
     } else if (result['status'] == 'not_enough_history') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Listen to a few more tracks to build your mixes.'),
-        ),
+      _showAppNotification(
+        'Listen to a few more tracks to build your mixes.',
+        Icons.info_outline,
+      );
+    } else if (result['status'] == 'ok' && updatedMixes?.isNotEmpty == true) {
+      _showAppNotification(
+        'Your daily mixes are ready.',
+        Icons.check_circle_outline,
+      );
+    } else if (result['status'] != 'ok') {
+      _showAppNotification(
+        'Could not create daily mixes. Try again.',
+        Icons.error_outline,
       );
     }
   }
@@ -95,15 +135,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              TextButton(
-                onPressed: _isBuildingMixes ? null : _buildDailyMixes,
-                child: Text(
-                  _dailyMixes.isEmpty ? 'Create' : 'Refresh',
-                  style: const TextStyle(
-                    color: Color(0xFFC4536A),
-                    fontSize: 12,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_isBuildingMixes) ...[
+                    const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFFC4536A),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  TextButton(
+                    onPressed: _isBuildingMixes ? null : _buildDailyMixes,
+                    child: Text(
+                      _dailyMixes.isEmpty ? 'Create' : 'Refresh',
+                      style: const TextStyle(
+                        color: Color(0xFFC4536A),
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),

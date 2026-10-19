@@ -36,7 +36,20 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Sona',
-      theme: ThemeData.dark(),
+      theme: ThemeData.dark().copyWith(
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: const Color(0xFF3A1020),
+          contentTextStyle: const TextStyle(
+            color: Color(0xFFFDE8ED),
+            fontSize: 13,
+          ),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          insetPadding: const EdgeInsets.all(16),
+        ),
+      ),
       initialRoute: '/',
       builder: (context, child) {
         return Container(

@@ -21,12 +21,11 @@ class MixService:
     def _history_track_ids(self, user_id):
         since = (datetime.now(timezone.utc) - timedelta(days=HISTORY_DAYS)).isoformat()
         rows = (
-            supabase.table("track_events")
+            supabase.table("play_history")
             .select("track_id")
             .eq("user_id", user_id)
-            .in_("event_type", ["play", "like"])
-            .gte("created_at", since)
-            .order("created_at", desc=True)
+            .gte("played_at", since)
+            .order("played_at", desc=True)
             .execute()
             .data
         )
